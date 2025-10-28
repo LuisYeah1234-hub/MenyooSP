@@ -1734,6 +1734,7 @@ void GTAmemory::InitEnhancedPools() {
 }
 
 
+
 Vector3 GTAmemory::ReadVector3(UINT64 address)
 {
 	const float* data = (float*)address;
@@ -1756,14 +1757,16 @@ struct HashNode
 };
 void GTAmemory::GenerateVehicleModelList()
 {
-
+	addlog(ige::LogType::LOG_DEBUG, "Generating Vehicle Model List. isEnhanced = " + g_isEnhanced, __FILENAME__);
 	int classOffset;
 	uintptr_t address;
 	HashNode** HashMap;
 	if (g_isEnhanced) {
+		addlog(ige::LogType::LOG_TRACE, "Scanning Enhanced Address", __FILENAME__);
 		address = MemryScan::PatternScanner::FindPattern("0f b6 88 ? ? ? ? 83 e1 ? e9");
 		if (address)
 		{
+			addlog(ige::LogType::LOG_TRACE, "Found Address, scanning for Hashes", __FILENAME__);
 			classOffset = *(uint*)(address + 3);
 
 			address = MemryScan::PatternScanner::FindPattern("74 ? 49 89 d0 4c 8b 1d");
@@ -1781,8 +1784,10 @@ void GTAmemory::GenerateVehicleModelList()
 		}
 	}
 	else {
+		addlog(ige::LogType::LOG_TRACE, "Scanning Legacy Address", __FILENAME__);
 		address = FindPattern("\x66\x81\xF9\x00\x00\x74\x10\x4D\x85\xC0", "xxx??xxxxx");
 		if (address) {
+			addlog(ige::LogType::LOG_TRACE, "Found Address, scanning for Hashes", __FILENAME__);
 			address = address - 0x21;
 			//UINT64 baseFuncAddr = *reinterpret_cast<int*>(address - 0x21) + address - 0x1D;
 			UINT64 baseFuncAddr = address + *reinterpret_cast<int*>(address) + 0x4;
@@ -1802,6 +1807,7 @@ void GTAmemory::GenerateVehicleModelList()
 
 	if (address)
 	{
+		addlog(ige::LogType::LOG_TRACE, "Patterns Scanned Success", __FILENAME__);
 		HashMap = reinterpret_cast<HashNode**>(modelHashTable);
 		//I know 0x20 items are defined but there are only 0x16 vehicle classes.
 		//But keeping it at 0x20 is just being safe as the & 0x1F in theory supports up to 0x20
@@ -1831,6 +1837,7 @@ void GTAmemory::GenerateVehicleModelList()
 			}
 		}
 	}
+	addlog(ige::LogType::LOG_TRACE, "Exiting GenerateVehicleModelList()", __FILENAME__);
 }
 
 bool GTAmemory::IsModelAPed(unsigned int modelHash)
