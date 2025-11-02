@@ -240,7 +240,7 @@ void PopulateVehicleModelsArray()
 	{
 		for (auto& dd : hashes[d])
 		{
-			addlog(ige::LogType::LOG_TRACE, "Read vehicle model: " + Model(dd).VehicleModelName(), __FILENAME__);
+			addlog(ige::LogType::LOG_TRACE, "Read vehicle model: " + std::to_string(Model(dd).hash) + " - " + Model(dd).VehicleModelName(), __FILENAME__);
 			if (std::find(g_vehHashes.begin(), g_vehHashes.end(), Model(dd)) == g_vehHashes.end())
 			{
 				if (g_isEnhanced || !isMinGameVersion3095 || !IS_VEHICLE_GEN9_EXCLUSIVE_MODEL(dd))

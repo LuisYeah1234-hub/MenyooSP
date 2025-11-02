@@ -53,10 +53,11 @@ typedef CVehicleModelInfo* (*InitVehicleArchetypeEnhanced_t)(uint32_t, const cha
 GetModelInfo_t GetModelInfo;
 
 std::unordered_map<unsigned int, std::string> g_vehicleHashes;
-CallHook<InitVehicleArchetype_t>* g_InitVehicleArchetypeLegacy = nullptr;
+CallHook<InitVehicleArchetype_t>* g_InitVehicleArchetype = nullptr;
 CVehicleModelInfo* initVehicleArchetype_stub(const char* name, bool a2, unsigned int a3) {
+	addlog(ige::LogType::LOG_DEBUG, "getting hashkey for " + std::string(name), __FILENAME__);
 	g_vehicleHashes.insert({ GET_HASH_KEY(name), boost::to_lower_copy(name) });
-	return g_InitVehicleArchetypeLegacy->fn(name, a2, a3);
+	return g_InitVehicleArchetype->fn(name, a2, a3);
 }
 
 // InitVehicleArchetype has been inlined in Enhanced, instead we hook one of functions which are called after it and take its first parameter.
@@ -74,7 +75,7 @@ void setupHooks() {
 			addlog(ige::LogType::LOG_ERROR, "Couldn't find InitVehicleArchetypeEnahnced", __FILENAME__);
 			return;
 		}
-		addlog(ige::LogType::LOG_INFO, "Found InitVehicleArchetype at " + std::to_string(addr), __FILENAME__);
+		addlog(ige::LogType::LOG_INFO, "Found InitVehicleArchetypeEnhanced at " + std::to_string(addr), __FILENAME__);
 		g_InitVehicleArchetypeEnhanced = HookManager::SetCall(addr, initVehicleArchetypeEnhanced_stub);
 	}
 	else {
@@ -84,14 +85,14 @@ void setupHooks() {
 			return;
 		}
 		addlog(ige::LogType::LOG_INFO, "Found InitVehicleArchetype at " + std::to_string(addr), __FILENAME__);
-		g_InitVehicleArchetypeLegacy = HookManager::SetCall(addr, initVehicleArchetype_stub);
+		g_InitVehicleArchetype = HookManager::SetCall(addr, initVehicleArchetype_stub);
 	}
 }
 
 void removeHooks() {
-	if (g_InitVehicleArchetypeLegacy) {
-		delete g_InitVehicleArchetypeLegacy;
-		g_InitVehicleArchetypeLegacy = nullptr;
+	if (g_InitVehicleArchetype) {
+		delete g_InitVehicleArchetype;
+		g_InitVehicleArchetype = nullptr;
 	}
 	if (g_InitVehicleArchetypeEnhanced) {
 		delete g_InitVehicleArchetypeEnhanced;
@@ -2941,6 +2942,9 @@ float* GeneralGlobalHax::GetVehicleBoostChargePtr()
 }
 
 std::string GTAmemory::GetVehicleModelName(Hash hash) {
+	if(g_vehicleHashes.empty()) {
+		addlog(ige::LogType::LOG_ERROR, "g_vehicleHashes Empty", __FILENAME__);
+	}
 	auto modelIt = g_vehicleHashes.find(hash);
 	if (modelIt != g_vehicleHashes.end()) return modelIt->second;
 	return "NOTFOUND";
