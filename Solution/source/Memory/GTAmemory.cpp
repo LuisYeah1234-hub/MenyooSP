@@ -1726,11 +1726,11 @@ void GTAmemory::InitEnhancedPools() {
 		}
 		address = address - 0x2C;
 		addlog(ige::LogType::LOG_TRACE, "Found Pattern: " + std::to_string(address), __FILENAME__);
-	
-	GetModelInfo = (GetModelInfo_t)(address);
-	
-	_SpSnow = SpSnow();
-}
+
+		GetModelInfo = (GetModelInfo_t)(address);
+
+		_SpSnow = SpSnow();
+	}
 }
 
 
@@ -1757,10 +1757,12 @@ struct HashNode
 };
 void GTAmemory::GenerateVehicleModelList()
 {
-	addlog(ige::LogType::LOG_DEBUG, "Generating Vehicle Model List. isEnhanced = " + g_isEnhanced, __FILENAME__);
+	addlog(ige::LogType::LOG_DEBUG, "Generating Vehicle Model List. isEnhanced = " + std::to_string(g_isEnhanced), __FILENAME__);
+
 	int classOffset;
 	uintptr_t address;
 	HashNode** HashMap;
+	//Zorg
 	if (g_isEnhanced) {
 		addlog(ige::LogType::LOG_TRACE, "Scanning Enhanced Address", __FILENAME__);
 		address = MemryScan::PatternScanner::FindPattern("0f b6 88 ? ? ? ? 83 e1 ? e9");
@@ -1784,7 +1786,6 @@ void GTAmemory::GenerateVehicleModelList()
 		}
 	}
 	else {
-		addlog(ige::LogType::LOG_TRACE, "Scanning Legacy Address", __FILENAME__);
 		address = FindPattern("\x66\x81\xF9\x00\x00\x74\x10\x4D\x85\xC0", "xxx??xxxxx");
 		if (address) {
 			addlog(ige::LogType::LOG_TRACE, "Found Address, scanning for Hashes", __FILENAME__);
@@ -1792,7 +1793,7 @@ void GTAmemory::GenerateVehicleModelList()
 			//UINT64 baseFuncAddr = *reinterpret_cast<int*>(address - 0x21) + address - 0x1D;
 			UINT64 baseFuncAddr = address + *reinterpret_cast<int*>(address) + 0x4;
 			//int classOffset = *reinterpret_cast<int*>(address + 0x10);
-			int classOffset = *reinterpret_cast<int*>(address + 0x31);
+			classOffset = *reinterpret_cast<int*>(address + 0x31);
 			modelHashEntries = *reinterpret_cast<UINT16*>(baseFuncAddr + *reinterpret_cast<int*>(baseFuncAddr + 3) + 7);
 			modelNum1 = *reinterpret_cast<int*>(*reinterpret_cast<int*>(baseFuncAddr + 0x52) + baseFuncAddr + 0x56); //cmp
 			modelNum2 = *reinterpret_cast<PUINT64>(*reinterpret_cast<int*>(baseFuncAddr + 0x63) + baseFuncAddr + 0x67); //mov
@@ -1803,34 +1804,29 @@ void GTAmemory::GenerateVehicleModelList()
 		}
 	}
 
-	//Zorg
-
-	if (address)
+	addlog(ige::LogType::LOG_TRACE, "Patterns Scanned Success", __FILENAME__);
+	HashMap = reinterpret_cast<HashNode**>(modelHashTable);
+	//I know 0x20 items are defined but there are only 0x16 vehicle classes.
+	//But keeping it at 0x20 is just being safe as the & 0x1F in theory supports up to 0x20
+	auto& vehicleHashes = GTAmemory::vehicleModels;
+	for (auto& vec : vehicleHashes)
+		vec.clear();
+	for (int i = 0; i < modelHashEntries; i++)
 	{
-		addlog(ige::LogType::LOG_TRACE, "Patterns Scanned Success", __FILENAME__);
-		HashMap = reinterpret_cast<HashNode**>(modelHashTable);
-		//I know 0x20 items are defined but there are only 0x16 vehicle classes.
-		//But keeping it at 0x20 is just being safe as the & 0x1F in theory supports up to 0x20
-		auto& vehicleHashes = GTAmemory::vehicleModels;
-		for (auto& vec : vehicleHashes)
-			vec.clear();
-		for (int i = 0; i < modelHashEntries; i++)
+		for (HashNode* cur = HashMap[i]; cur; cur = cur->next)
 		{
-			for (HashNode* cur = HashMap[i]; cur; cur = cur->next)
+			UINT16 data = cur->data;
+			if ((int)data < modelNum1 && bittest(*reinterpret_cast<int*>(modelNum2 + (4 * data >> 5)), data & 0x1F))
 			{
-				UINT16 data = cur->data;
-				if ((int)data < modelNum1 && bittest(*reinterpret_cast<int*>(modelNum2 + (4 * data >> 5)), data & 0x1F))
+				UINT64 addr1 = modelNum4 + modelNum3 * data;
+				if (addr1)
 				{
-					UINT64 addr1 = modelNum4 + modelNum3 * data;
-					if (addr1)
+					UINT64 addr2 = *reinterpret_cast<PUINT64>(addr1);
+					if (addr2)
 					{
-						UINT64 addr2 = *reinterpret_cast<PUINT64>(addr1);
-						if (addr2)
+						if ((*reinterpret_cast<PBYTE>(addr2 + 157) & 0x1F) == 5) // Vehicle
 						{
-							if ((*reinterpret_cast<PBYTE>(addr2 + 157) & 0x1F) == 5) // Vehicle
-							{
-								vehicleHashes[*reinterpret_cast<PBYTE>(addr2 + classOffset) & 0x1F].push_back((unsigned int)cur->hash);
-							}
+							vehicleHashes[*reinterpret_cast<PBYTE>(addr2 + classOffset) & 0x1F].push_back((unsigned int)cur->hash);
 						}
 					}
 				}

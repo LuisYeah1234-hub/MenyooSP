@@ -423,13 +423,10 @@ void update_nearby_stuff_arrays_tick()
 	_worldObjects.clear();
 	_worldEntities.clear();
 	//bool alreadyIn;
-	if(false)
-	{
-		GTAmemory::GetVehicleHandles(_worldVehicles);
-		GTAmemory::GetPedHandles(_worldPeds);
-		GTAmemory::GetPropHandles(_worldObjects);
-		GTAmemory::GetEntityHandles(_worldEntities);
-	}
+	GTAmemory::GetVehicleHandles(_worldVehicles);
+	GTAmemory::GetPedHandles(_worldPeds);
+	GTAmemory::GetPropHandles(_worldObjects);
+	GTAmemory::GetEntityHandles(_worldEntities);
 	/*INT i, offsettedID, count = 80;
 
 	Ped *peds = new Ped[count * 2 + 2];
