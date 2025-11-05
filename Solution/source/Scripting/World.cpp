@@ -647,7 +647,7 @@ namespace World
 		PCHAR dict = 0;
 		PCHAR name = 0;
 		float zOffset = 0.0f;
-		if (type == 1 || type == 43) zOffset = -0.5f;
+		if (type == 1 || type == 43) zOffset = -0.7f;
 		if (textureDict.length() > 0 && textureName.length() > 0)
 		{
 			dict = (PCHAR)textureDict.c_str();
