@@ -1509,7 +1509,14 @@ namespace sub
 					int pedCompIdValueDrawable = stoi(pedCompIdValueStr.substr(0, pedCompIdValueStr.find(",")));
 					int pedCompIdValueTexture = stoi(pedCompIdValueStr.substr(pedCompIdValueStr.find(",") + 1));
 
-					SET_PED_COMPONENT_VARIATION(ep.Handle(), pedCompId, pedCompIdValueDrawable, pedCompIdValueTexture, 0);
+					if (GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(ep.Handle(), pedCompId) >= pedCompIdValueDrawable && GET_NUMBER_OF_PED_TEXTURE_VARIATIONS(ep.Handle(), pedCompId, pedCompIdValueDrawable) >= pedCompIdValueTexture)
+					{
+						SET_PED_COMPONENT_VARIATION(ep.Handle(), pedCompId, pedCompIdValueDrawable, pedCompIdValueTexture, 0);
+						addlog(ige::LogType::LOG_DEBUG, "Applied ped component " + std::to_string(pedCompId) + " with drawable " + std::to_string(pedCompIdValueDrawable) + " and texture " + std::to_string(pedCompIdValueTexture), __FILENAME__);
+					}
+					else
+						addlog(ige::LogType::LOG_WARNING, "Ped comp " + std::to_string(pedCompId) + " out of range - Drawable " + std::to_string(pedCompIdValueDrawable) + " and texture " + std::to_string(pedCompIdValueTexture), __FILENAME__);
+
 				}
 			}
 			if (applyProps)
