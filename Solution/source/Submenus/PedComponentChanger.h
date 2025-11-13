@@ -180,6 +180,7 @@ namespace sub
 
 		void Sub_Main();
 		void Sub_HeadOverlays();
+		void ApplyHeadOverlayTint(GTAped ped, int overlayIndex, int colourType, int primary, int secondary);
 		void Sub_HeadOverlays_InItem();
 		void Sub_FaceFeatures();
 		void Sub_SkinTone();

@@ -1118,6 +1118,15 @@ namespace sub
 				}
 			}
 		}
+
+		void ApplyHeadOverlayTint(GTAped ped, int overlayIndex, int colourType, int primary, int secondary)
+		{
+			if (primary < 0 || colourType == 0)
+				SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, 0, 0);
+			else
+				SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, primary, secondary);
+		}
+
 		void Sub_HeadOverlays_InItem()
 		{
 			auto& overlayIndex = Static_12;
@@ -1143,35 +1152,27 @@ namespace sub
 				if (currentOverlayValue < max_overlays)
 				{
 					currentOverlayValue++;
-					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
-					currentOverlayData.colour - 1;
-					currentOverlayData.colourSecondary = -1;
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, 0, 0);
 				}
 				else
 				{
 					currentOverlayValue = currentOverlayValue == 255 ? 0 : 255;
-					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
-					currentOverlayData.colour - 1;
-					currentOverlayData.colourSecondary = -1;
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, 0, 0);
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, currentOverlayData.colour=0, currentOverlayData.colourSecondary=0);
+					
 				}
+				SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
+				ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour = -1, currentOverlayData.colourSecondary = -1);
 			}
 			if (overlay_minus)
 			{
 				if (currentOverlayValue > 0)
 				{
 					currentOverlayValue = currentOverlayValue > max_overlays ? max_overlays : currentOverlayValue - 1;
-					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, currentOverlayData.colour=0, currentOverlayData.colourSecondary=0);
 				}
 				else
 				{
 					currentOverlayValue = 255;
-					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, currentOverlayData.colour=0, currentOverlayData.colourSecondary=0);
 				}
+				SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
+				ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour = -1, currentOverlayData.colourSecondary = -1);
 			}
 
 			// OPACITY
@@ -1196,27 +1197,27 @@ namespace sub
 			if (bColoursAvailable)
 			{
 				bool colour_plus = 0, colour_minus = 0;
-				bool colourSecondary_plus = 0, colourSecondary_minus = 0, isColour = currentOverlayData.colour > -1;
+				bool colourSecondary_plus = 0, colourSecondary_minus = 0;
 
 				// PRIMARY COLOUR
 				AddNumber(Game::GetGXTEntry("CMOD_COL0_0", "Primary Colour"), currentOverlayData.colour, 0, null, colour_plus, colour_minus);
 				if (colour_plus)
 				{
 					if (currentOverlayData.colour < max_colours)
-					{
 						currentOverlayData.colour++;
-						isColour = currentOverlayData.colour > -1;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
-					}
+					else
+						currentOverlayData.colour = -1;
+
+					ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
 				}
 				if (colour_minus)
 				{
 					if (currentOverlayData.colour > -1)
-					{
 						currentOverlayData.colour--;
-						isColour = currentOverlayData.colour > -1;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType*isColour, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
-					}
+					else
+						currentOverlayData.colour = max_colours;
+
+					ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
 				}
 
 				// SECONDARY COLOUR
@@ -1225,23 +1226,17 @@ namespace sub
 				if (colourSecondary_plus)
 				{
 					if (currentOverlayData.colourSecondary < max_colours)
-					{
 						currentOverlayData.colourSecondary++;
-						isColour = currentOverlayData.colour > -1;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
-					}
+
+					ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
 				}
 				if (colourSecondary_minus)
 				{
 					if (currentOverlayData.colourSecondary > -1)
-					{
 						currentOverlayData.colourSecondary--;
-						isColour = currentOverlayData.colour > -1;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
-					}
-				}
 
-				Game::Print::PrintBottomCentre("overlayIndex = " + std::to_string(overlayIndex) + ", colourType = " + std::to_string(colourType) + ", currentOverlayData.colour = " + std::to_string(currentOverlayData.colour) + ", currentOverlayData.colourSecondary = " + std::to_string(currentOverlayData.colourSecondary));
+					ApplyHeadOverlayTint(ped, overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
+				}
 			}
 		}
 		void Sub_FaceFeatures()
