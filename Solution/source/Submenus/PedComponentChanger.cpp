@@ -1144,12 +1144,17 @@ namespace sub
 				{
 					currentOverlayValue++;
 					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
-					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, currentOverlayData.colour=0, currentOverlayData.colourSecondary=0);
+					currentOverlayData.colour - 1;
+					currentOverlayData.colourSecondary = -1;
+					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, 0, 0);
 				}
 				else
 				{
 					currentOverlayValue = currentOverlayValue == 255 ? 0 : 255;
 					SET_PED_HEAD_OVERLAY(ped.Handle(), overlayIndex, currentOverlayValue, currentOverlayData.opacity);
+					currentOverlayData.colour - 1;
+					currentOverlayData.colourSecondary = -1;
+					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, 0, 0);
 					SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, 0, currentOverlayData.colour=0, currentOverlayData.colourSecondary=0);
 				}
 			}
@@ -1191,7 +1196,7 @@ namespace sub
 			if (bColoursAvailable)
 			{
 				bool colour_plus = 0, colour_minus = 0;
-				bool colourSecondary_plus = 0, colourSecondary_minus = 0;
+				bool colourSecondary_plus = 0, colourSecondary_minus = 0, isColour = currentOverlayData.colour > -1;
 
 				// PRIMARY COLOUR
 				AddNumber(Game::GetGXTEntry("CMOD_COL0_0", "Primary Colour"), currentOverlayData.colour, 0, null, colour_plus, colour_minus);
@@ -1200,37 +1205,43 @@ namespace sub
 					if (currentOverlayData.colour < max_colours)
 					{
 						currentOverlayData.colour++;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
+						isColour = currentOverlayData.colour > -1;
+						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
 					}
 				}
 				if (colour_minus)
 				{
-					if (currentOverlayData.colour > 0)
+					if (currentOverlayData.colour > -1)
 					{
 						currentOverlayData.colour--;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
+						isColour = currentOverlayData.colour > -1;
+						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType*isColour, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
 					}
 				}
 
 				// SECONDARY COLOUR
-				AddNumber(Game::GetGXTEntry("CMOD_COL0_1", "Secondary Colour"), currentOverlayData.colourSecondary, 0, null, colourSecondary_plus, colourSecondary_minus);
+				if(currentOverlayData.colour > -1)
+					AddNumber(Game::GetGXTEntry("CMOD_COL0_1", "Secondary Colour"), currentOverlayData.colourSecondary, 0, null, colourSecondary_plus, colourSecondary_minus);
 				if (colourSecondary_plus)
 				{
 					if (currentOverlayData.colourSecondary < max_colours)
 					{
 						currentOverlayData.colourSecondary++;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
+						isColour = currentOverlayData.colour > -1;
+						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
 					}
 				}
 				if (colourSecondary_minus)
 				{
-					if (currentOverlayData.colourSecondary > 0)
+					if (currentOverlayData.colourSecondary > -1)
 					{
 						currentOverlayData.colourSecondary--;
-						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour, currentOverlayData.colourSecondary);
+						isColour = currentOverlayData.colour > -1;
+						SET_PED_HEAD_OVERLAY_TINT(ped.Handle(), overlayIndex, colourType, currentOverlayData.colour * isColour, currentOverlayData.colourSecondary * isColour);
 					}
 				}
 
+				Game::Print::PrintBottomCentre("overlayIndex = " + std::to_string(overlayIndex) + ", colourType = " + std::to_string(colourType) + ", currentOverlayData.colour = " + std::to_string(currentOverlayData.colour) + ", currentOverlayData.colourSecondary = " + std::to_string(currentOverlayData.colourSecondary));
 			}
 		}
 		void Sub_FaceFeatures()

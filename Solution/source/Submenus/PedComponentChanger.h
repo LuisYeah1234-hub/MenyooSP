@@ -144,8 +144,8 @@ namespace sub
 			sPedHeadOverlayData()
 			{
 				this->opacity = 1.0f;
-				this->colour = 0;
-				this->colourSecondary = 0;
+				this->colour = -1;
+				this->colourSecondary = -1;
 			}
 		};
 		struct sPedHeadFeatures
