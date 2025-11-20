@@ -50,7 +50,7 @@ namespace sub::Spooner
 		STSTask* _selectedSTST = nullptr;
 
 		namespace Sub_TaskSequence
-		{
+		{			
 			void Nothing()
 			{
 			}
@@ -1714,8 +1714,6 @@ namespace sub::Spooner
 			}
 		}
 
-		float durationmult = 1;
-
 		void Sub_TaskSequence_InTask()
 		{
 			auto tskPtr = _selectedSTST;			
@@ -1731,15 +1729,15 @@ namespace sub::Spooner
 			if (thisDuration >= 0) // -1 for tasks with no settings. -2 for tasks with settings but no duration setting.
 			{
 				bool bDuration_plus = false, bDuration_minus = false, bDuration_input = false, bDurationMult_plus = false, bDurationMult_minus = false;
-				AddNumber("Duration (In Seconds)", (float(thisDuration) / 1000), 4, bDuration_input, bDuration_plus, bDuration_minus);
-				AddNumber("Duration Step Multiplier", durationmult, 4, null, bDurationMult_plus, bDurationMult_minus);
-				if (bDuration_plus) { if (thisDuration <= INT_MAX - 1000 * durationmult) thisDuration += 1000 * durationmult; }
-				if (bDuration_minus) { if (thisDuration >= 1000 * durationmult) thisDuration -= 1000 * durationmult; }
-				if (bDurationMult_plus) { if (durationmult < 1000.0f) durationmult = durationmult * 10.0f; }
-				if (bDurationMult_minus) { if (durationmult > 0.001f) durationmult = durationmult / 10.0f; }
+				AddNumber("Duration (In Seconds)", (float(thisDuration) / 1000), 3, bDuration_input, bDuration_plus, bDuration_minus);
+				AddNumber("Scroll Sensitivity", (float(_manualPlacementPrecision)), 3, null, prec_minus, prec_plus);
+				if (bDuration_plus) { if (thisDuration <= INT_MAX-_manualPlacementPrecision) thisDuration += _manualPlacementPrecision; }
+				if (bDuration_minus) { if (thisDuration > _manualPlacementPrecision) thisDuration -= _manualPlacementPrecision; }						
+				if (prec_plus) { if (_manualPlacementPrecision < 10.0f) _manualPlacementPrecision *= 10; }
+				if (prec_minus) { if (_manualPlacementPrecision > 0.001f) _manualPlacementPrecision /= 10; }
 				if (bDuration_input)
 				{
-					std::string oldDurationPreText = std::to_string(float(thisDuration - (thisDuration % 500)) / 1000);
+					std::string oldDurationPreText = std::to_string(float(thisDuration) / 1000);
 					oldDurationPreText = oldDurationPreText.substr(0, oldDurationPreText.find('.') + 2);
 					std::string inputStr = Game::InputBox("", 7 + 1, "Enter duration in seconds:", oldDurationPreText);
 					if (inputStr.length() > 0)
@@ -1757,7 +1755,6 @@ namespace sub::Spooner
 						{
 							inputVal = thisDuration;
 						}
-						//inputVal -= (inputVal % 500);
 						thisDuration = inputVal;
 					}
 					//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::ST_Duration, std::string(), 7U, "Enter duration in seconds:", oldDurationPreText);
