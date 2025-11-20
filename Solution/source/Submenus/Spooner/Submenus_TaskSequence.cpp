@@ -1728,7 +1728,7 @@ namespace sub::Spooner
 			auto& thisDuration = tskPtr->duration;
 			if (thisDuration >= 0) // -1 for tasks with no settings. -2 for tasks with settings but no duration setting.
 			{
-				bool bDuration_plus = false, bDuration_minus = false, bDuration_input = false, bDurationMult_plus = false, bDurationMult_minus = false;
+				bool bDuration_plus = false, bDuration_minus = false, bDuration_input = false, bDurationMult_plus = false, bDurationMult_minus = false, prec_plus = 0, prec_minus = 0;
 				AddNumber("Duration (In Seconds)", (float(thisDuration) / 1000), 3, bDuration_input, bDuration_plus, bDuration_minus);
 				AddNumber("Scroll Sensitivity", (float(_manualPlacementPrecision)), 3, null, prec_minus, prec_plus);
 				if (bDuration_plus) { if (thisDuration <= INT_MAX-_manualPlacementPrecision) thisDuration += _manualPlacementPrecision; }
