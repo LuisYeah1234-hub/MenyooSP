@@ -254,6 +254,8 @@ namespace sub::Spooner
 			if (SpoonerMode::bEnabled)
 			{
 				HIDE_HUD_AND_RADAR_THIS_FRAME();
+				if (IS_CUTSCENE_PLAYING()) 
+					BYPASS_CUTSCENE_CAM_RENDERING_THIS_UPDATE();
 
 				//if (setting)
 				{
